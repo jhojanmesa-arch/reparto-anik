@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reparto ANI-K</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Estilo ANI-K (el de anikmakeup.com y Avisos de guía: rosa, malva, ciruela, Open Sans), SIN barra negra arriba.
+   Pantallas: inicio (nombre + ola) → ola (panel grande del producto activo, cuadrícula de posiciones,
+   productos pendientes) con la barra de la pistola fija abajo. Pensado para tablet de ~800 px. */
+:root{
+  --bg:#faf6f8; --panel:#ffffff; --ink:#232323; --muted:#6e6268; --line:#ece3e7;
+  --rosa:#efaecb; --rosa-bg:#fcf0f6; --malva:#8a5f78; --ciruela:#5a4150;
+  --navy:var(--ciruela); --navy-ink:#ffffff; --accent:var(--malva);
+  --ok:#127556; --ok-bg:#e6f5ef; --ok-solid:#1d9e75; --bad:#b4123a; --bad-bg:#fbe9ee; --bad-solid:#b4123a; --warn:#8a5a00; --warn-bg:#fff5df;
+  --sombra:0 1px 2px rgba(90,65,80,.06),0 4px 14px rgba(90,65,80,.07);
+  --sans:"Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#1a1418; --panel:#241c21; --ink:#f4ecf0; --muted:#b9a9b2; --line:#3a2f36;
+  --rosa:#efaecb; --rosa-bg:#3a2731; --malva:#d7a6c2; --ciruela:#8a5f78;
+  --ok:#6fd8ad; --ok-bg:#163428; --ok-solid:#1d9e75; --bad:#ff8fa8; --bad-bg:#3d1621; --bad-solid:#c2194a; --warn:#ffc65c; --warn-bg:#33270b;
+  --sombra:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark } }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums}
+h1{font-size:24px;margin:0;font-weight:800;color:var(--ciruela)}
+.sub{color:var(--muted);margin:0;font-size:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sombra)}
+.etq{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--malva);display:block;margin-bottom:6px}
+input[type=text]{font:700 22px var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%}
+input[type=text]:focus{border-color:var(--malva);background:var(--panel)}
+select{width:100%;font:600 20px var(--sans);padding:12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+input:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--rosa);outline-offset:2px}
+.btn{font:700 13.5px var(--sans);text-transform:uppercase;letter-spacing:.08em;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--ciruela);padding:10px 20px;cursor:pointer;min-height:44px;touch-action:manipulation}
+.btn.pri{background:var(--ciruela);color:#fff;border-color:var(--ciruela)}
+.btn.verde{background:var(--ok-solid);color:#fff;border-color:var(--ok-solid)}
+.btn.rojo{color:var(--bad);border-color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.grande{min-height:58px;font-size:16px}
+.btn.link{border:0;background:none;color:var(--malva);padding:4px 0;min-height:0;font-size:12.5px}
+.aviso{padding:12px 16px;border-radius:10px;font-weight:600}
+.aviso.bad{background:var(--bad-bg);color:var(--bad)} .aviso.warn{background:var(--warn-bg);color:var(--warn)} .aviso.ok{background:var(--ok-bg);color:var(--ok)}
+.det{font-size:13px;color:var(--muted)}
+.mono{font-family:var(--sans);font-weight:700}
+.marca{font-weight:800;letter-spacing:.04em;color:var(--ciruela);font-size:15px;line-height:1}
+.marca small{display:block;font-size:8.5px;letter-spacing:.42em;font-weight:700;color:var(--malva);margin-top:2px}
+
+/* --- inicio --- */
+.centro{max-width:560px;margin:0 auto;padding:8vh 16px 40px;display:flex;flex-direction:column;gap:16px}
+.tarjeta{padding:28px;display:flex;flex-direction:column;gap:18px}
+.tarjeta .marca{font-size:22px}
+#olaIn{font-size:32px;text-align:center;letter-spacing:.08em}
+#nombreIn{font:600 22px var(--sans);text-align:center}
+
+/* --- ola --- */
+.wrap{max-width:1100px;margin:0 auto;padding:14px 12px 120px;display:flex;flex-direction:column;gap:12px}
+.cab{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 18px}
+.cab h2{margin:0;font-size:22px;font-weight:800;color:var(--ciruela)}
+.cab .chip{font-size:12.5px;font-weight:600;padding:4px 12px;border-radius:999px;background:var(--rosa-bg);color:var(--ciruela)}
+.cab .prog{margin-left:auto;text-align:right}
+.cab .prog b{font-size:26px;font-weight:800;display:block;line-height:1.1;color:var(--ciruela)}
+.cab .prog span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;width:100%;align-items:center}
+.acciones .der{margin-left:auto;display:flex;gap:8px}
+
+/* Panel grande: lo que la persona mira mientras camina */
+#grande{padding:22px;display:flex;flex-direction:column;gap:14px;min-height:240px;border-width:1.5px}
+#grande.idle{align-items:center;justify-content:center;text-align:center;color:var(--muted);background:var(--panel)}
+#grande.idle .ico{width:64px;height:64px;border-radius:50%;background:var(--rosa-bg);color:var(--malva);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800}
+#grande.idle b{font-size:24px;color:var(--ciruela);font-weight:800}
+#grande.prod{border-color:var(--rosa)}
+#grande.okp{border-color:var(--ok-solid);background:var(--ok-bg)}
+#grande .lbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--malva)}
+#grande .nombre{font-size:26px;font-weight:800;line-height:1.2;color:var(--ink)}
+#grande .tono{font-size:18px;font-weight:600;color:var(--muted)}
+.posiciones{display:flex;flex-wrap:wrap;gap:10px}
+.pos{font-size:32px;font-weight:800;padding:10px 20px;border-radius:14px;background:var(--ciruela);color:#fff;line-height:1.1;display:flex;flex-direction:column;align-items:center}
+.pos small{font-size:11.5px;font-weight:600;opacity:.8}
+.pos.hecha{background:transparent;color:var(--ok);border:1.5px dashed color-mix(in srgb,var(--ok-solid) 45%,transparent);text-decoration:line-through;text-decoration-thickness:2px}
+.pos.hecha small{text-decoration:none}
+.pos.ultima{background:var(--ok-solid);color:#fff;text-decoration:none;border:0}
+/* "Pon aquí": posición a la izquierda, cantidad en cuadro(s) blanco(s) grande(s) a la derecha */
+.poner{display:flex;justify-content:space-between;align-items:center;gap:16px 20px;flex-wrap:wrap;padding:18px 18px 18px 24px;border-radius:16px;background:var(--ok-solid);color:#fff}
+.poner .donde{font-size:52px;font-weight:800;line-height:1}
+.poner .lbl{color:#fff!important;opacity:.85}
+.cajas{display:flex;align-items:center;gap:10px;margin-left:auto}
+.cant{background:#fff;border-radius:14px;min-width:170px;padding:12px 20px 14px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.cant b{display:block;font-size:84px;font-weight:800;line-height:.95;color:var(--ok)}
+.cant span{display:block;font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ciruela);margin-top:4px}
+.cant small{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:2px}
+.suma{font-size:40px;font-weight:800;color:#fff}
+.total-und{width:100%;text-align:right;font-size:14px;font-weight:700;opacity:.95}
+.nota{font-size:14px;font-weight:600}
+.fin-prod{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;border-radius:14px;background:var(--panel);border:1.5px solid var(--ok-solid)}
+.fin-prod span{flex:1;min-width:200px;font-weight:600;color:var(--ok)}
+.fin-prod .btn{min-height:56px;font-size:15px;padding:0 28px}
+
+/* Cuadrícula de posiciones */
+.grid-tit{display:flex;justify-content:space-between;align-items:baseline;padding:14px 18px 0;gap:10px}
+.grid-tit h3,.pend h3{margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--malva)}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:12px 18px 18px}
+.celda{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;background:var(--panel);text-align:left;font:inherit;color:inherit;cursor:pointer}
+.celda .e{font-size:21px;font-weight:800;color:var(--ciruela)}
+.celda .barra{height:6px;background:var(--line);border-radius:4px;overflow:hidden}
+.celda .barra i{display:block;height:100%;background:var(--malva)}
+.celda.lista{border-color:color-mix(in srgb,var(--ok-solid) 50%,transparent);background:var(--ok-bg)}
+.celda.lista .e{color:var(--ok)}
+.celda.lista .barra i{background:var(--ok-solid)}
+.celda.activa{border-color:var(--rosa);background:var(--rosa-bg)}
+.pend{padding:14px 18px}
+.pend ul{list-style:none;margin:8px 0 0;padding:0}
+.pend li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.pend li .ps{font-weight:700;color:var(--ciruela);text-align:right;white-space:nowrap}
+.pend summary{cursor:pointer;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--malva)}
+
+.pie{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -4px 18px rgba(90,65,80,.08);padding:10px 12px;z-index:5}
+.pie .in{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+.pie #scan{font-size:17px;padding:12px 14px;flex:1;min-width:0}
+.barra-scan{display:flex;gap:8px;align-items:stretch}
+.btn.icono{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:74px;padding:6px 10px;border-radius:12px;font-size:10.5px;letter-spacing:.06em}
+.btn.icono svg{width:24px;height:24px}
+#btnCam{background:var(--ciruela);color:#fff;border-color:var(--ciruela)}
+/* Cámara */
+.caja.cam{padding:16px;gap:10px}
+.visor{position:relative;border-radius:12px;overflow:hidden;background:#111;aspect-ratio:4/3}
+.visor video{width:100%;height:100%;object-fit:cover;display:block}
+.visor .mira{position:absolute;left:12%;right:12%;top:35%;bottom:35%;border:3px solid var(--rosa);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.visor .estado-cam{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:#fff;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}
+.btn.foto{position:relative;overflow:hidden}
+.btn.foto input{position:absolute;inset:0;opacity:0;cursor:pointer}
+/* Lista manual */
+.lista-man{display:flex;flex-direction:column;gap:6px;max-height:52vh;overflow:auto}
+.it-man{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;text-align:left;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--panel);font:inherit;color:inherit;cursor:pointer}
+.it-man:hover{border-color:var(--rosa);background:var(--rosa-bg)}
+.it-man .ref{font-size:12px;font-weight:800;color:var(--malva);letter-spacing:.04em;white-space:nowrap}
+.it-man .nom{font-weight:700;line-height:1.25}
+.it-man .nom small{display:block;font-weight:600;color:var(--muted);font-size:12.5px}
+.it-man .cuantas{font-size:12px;font-weight:700;color:var(--ciruela);white-space:nowrap;text-align:right}
+.it-man.hecho{opacity:.55}
+.it-man.hecho .cuantas{color:var(--ok)}
+.msg{min-height:20px;font-weight:700;font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg.bad{color:var(--bad)}.msg.ok{color:var(--ok)}.msg.warn{color:var(--warn)}
+.sync{font-size:12px;color:var(--muted)}
+
+/* Cuadros (sin franja de color arriba: el color va en el fondo y el título) */
+.modal{position:fixed;inset:0;background:rgba(35,25,31,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.caja{background:var(--panel);color:var(--ink);border-radius:16px;max-width:620px;width:100%;padding:24px;max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(35,25,31,.25)}
+.caja.error{background:var(--bad-bg);border:2px solid var(--bad-solid)}
+.caja.aviso-caja{background:var(--warn-bg);border:2px solid #d9a21b}
+.caja h3{margin:0;font-size:20px;line-height:1.25;font-weight:800;color:var(--ciruela)}
+.caja .grito{font-size:30px;font-weight:800;color:var(--bad);margin:0;line-height:1.15}
+.caja .grito.warn{color:var(--warn)}
+.caja p{margin:0}
+.botones{display:flex;gap:10px;flex-wrap:wrap}
+.botones .btn{flex:1;min-height:52px}
+.op{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer}
+.op:has(input:checked){border-color:var(--malva);background:var(--rosa-bg)}
+.fila{display:flex;gap:8px;flex-wrap:wrap}
+.resumen{display:grid;grid-template-columns:1fr auto;gap:6px 16px;margin:0}
+.resumen dt{color:var(--muted)} .resumen dd{margin:0;font-size:18px;font-weight:800;text-align:right;color:var(--ciruela)}
+@keyframes sacude{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.sacude{animation:sacude .35s}
+@media (prefers-reduced-motion:reduce){.sacude{animation:none}}
+@media (max-width:520px){ .pos{font-size:26px} .poner .donde{font-size:38px} .cajas{margin-left:0;width:100%;justify-content:center} .cant{min-width:120px} .cant b{font-size:60px} }
+</style>
+</head>
+<body>
+
+<!-- 1. Inicio: quién reparte + número de ola -->
+<div class="centro" id="vInicio">
+  <form class="panel tarjeta" id="fOla" autocomplete="off">
+    <div class="marca">ANI-K<small>MAKEUP</small></div>
+    <h1>Reparto con pistola</h1>
+    <p class="sub">Escanea un producto y la pantalla te dice a qué posiciones va. En cada posición escanea su etiqueta: ahí te dice cuántas unidades poner.</p>
+    <div>
+      <label class="etq" for="nombreIn">¿Quién reparte?</label>
+      <input type="text" id="nombreIn" autocomplete="off" placeholder="Tu nombre">
+      <select id="nombreSel" hidden><option value="">Elige tu nombre</option></select>
+    </div>
+    <div>
+      <label class="etq" for="olaIn">Número de la ola</label>
+      <input type="text" id="olaIn" inputmode="numeric" autocomplete="off" placeholder="572">
+    </div>
+    <div id="aviso"></div>
+    <button class="btn pri grande" type="submit" id="btnAbrir">Abrir ola</button>
+  </form>
+  <p class="det" style="text-align:center" id="estadoCod">Cargando códigos de barras…</p>
+</div>
+
+<!-- 2. Ola -->
+<div class="wrap" id="vOla" hidden>
+  <section class="panel cab">
+    <div class="marca">ANI-K<small>MAKEUP</small></div>
+    <h2 id="tOla"></h2>
+    <span class="chip" id="tEst"></span>
+    <span class="chip" id="tQuien"></span>
+    <div class="prog"><b id="tProg"></b><span>colocados</span></div>
+    <div class="acciones">
+      <button class="btn link" type="button" id="btnSalir">← Otra ola</button>
+      <div class="der">
+        <button class="btn" type="button" id="btnRecargar">Recargar de Bukapp</button>
+        <button class="btn verde" type="button" id="btnTerminar">Terminar</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="grande"></section>
+
+  <section class="panel">
+    <div class="grid-tit"><h3>Posiciones de la ola</h3><span class="det">Toca una para ver qué le falta</span></div>
+    <div id="grid"></div>
+  </section>
+
+  <section class="panel pend">
+    <details id="dPend">
+      <summary>Productos que faltan por repartir (<span id="nPend">0</span>)</summary>
+      <ul id="lPend"></ul>
+    </details>
+  </section>
+</div>
+<div class="pie" id="pie" hidden>
+  <div class="in">
+    <div class="barra-scan">
+      <!-- Esquina izquierda: buscar el producto a mano (lista por referencia y nombre) -->
+      <button class="btn icono" type="button" id="btnManual" aria-label="Elegir producto a mano">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Manual</span></button>
+      <!-- inputmode="none": la pistola escribe aquí y la tablet no abre el teclado -->
+      <input type="text" id="scan" inputmode="none" placeholder="Dispara la pistola aquí" autocomplete="off" aria-label="Escanear">
+      <!-- Al lado: leer el código con la cámara de la tablet -->
+      <button class="btn icono" type="button" id="btnCam" aria-label="Leer con la cámara">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.5-2h5L16 6h1.5A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Cámara</span></button>
+    </div>
+    <div class="msg" id="msg" role="status" aria-live="polite"></div>
+    <div class="sync" id="sync"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden></div>
+
+<script>
+(function(){
+  var st = {vista:"inicio", ola:null, pedidos:[], grupos:[], porPos:{}, hechas:{}, activo:null, ultimaPos:null,
+            codigos:{}, cola:[], errCola:[], turno:0, enviando:false, errAbierto:0, formAbierto:false};
+  var $ = function(id){ return document.getElementById(id); };
+  var nf = function(n){ return Math.round(n).toLocaleString("es-CO"); };
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  function ahora(){ var d = new Date(), p = function(n){ return (n < 10 ? "0" : "") + n; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()); }
+
+  /* ===== servidor: google.script.run dentro de Apps Script; fetch a API_URL si se sirve desde otro lado ===== */
+  var API_URL = "https://script.google.com/macros/s/AKfycbzfJwRhvgS3inechM3p_hLulU3HYNFyuEVmR-nUt2Nq9_955aNF3xlB4B57OG8a54_P/exec";
+  var EN_GAS = !!(window.google && google.script && google.script.run);
+  var claveMem = "";
+  function api(fn, args){
+    var cuerpo = JSON.stringify({fn:fn, args:args || {}, clave:lsGet("rep:clave") || claveMem});
+    return new Promise(function(ok, fail){
+      function resp(r){
+        if(r && r.clave === false){ pedirClave(r.error); fail(r); return; }
+        if(r && r.ok) ok(r); else fail(r || {error:"El servidor no respondió."});
+      }
+      if(EN_GAS){
+        google.script.run
+          .withSuccessHandler(function(t){ var r; try{ r = JSON.parse(t); }catch(e){ fail({error:"Respuesta ilegible del servidor."}); return; } resp(r); })
+          .withFailureHandler(function(e){ fail({error:"Se perdió la conexión con el servidor: " + (e && e.message || e), red:true}); })
+          .apiWeb(cuerpo);
+        return;
+      }
+      if(API_URL.indexOf("PEGA_AQUI") === 0){ fail({error:"Falta configurar la página: pega la URL /exec en API_URL."}); return; }
+      fetch(API_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:cuerpo})
+        .then(function(r){ return r.text(); })
+        .then(function(t){ var r; try{ r = JSON.parse(t); }catch(e){ fail({error:"El Apps Script no devolvió datos."}); return; } resp(r); })
+        .catch(function(){ fail({error:"No hay conexión con el servidor.", red:true}); });
+    });
+  }
+  var esperandoClave = false;
+  function pedirClave(msg){
+    if(esperandoClave) return;
+    esperandoClave = true; st.formAbierto = true;
+    abrirCuadro('<form class="caja" id="fClave" autocomplete="off"><h3>Clave de bodega</h3>' +
+      '<p class="det">Este equipo todavía no tiene la clave. Pídesela a tu líder: se escribe una sola vez.</p>' +
+      (msg && /incorrecta/i.test(msg) ? '<div class="aviso bad">' + esc(msg) + "</div>" : "") +
+      '<input type="text" id="claveIn" autocomplete="off"><div class="fila" style="justify-content:flex-end"><button class="btn pri" type="submit">Guardar</button></div></form>');
+    $("claveIn").focus();
+    $("fClave").onsubmit = function(ev){
+      ev.preventDefault(); claveMem = $("claveIn").value.trim(); lsSet("rep:clave", claveMem);
+      esperandoClave = false; cerrarCuadro(); cargarBase();
+    };
+  }
+
+  /* ===== sonido y vibración ===== */
+  var actx = null;
+  function tono(f, dur, tipo, vol, cuando){
+    try{
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + (cuando || 0);
+      o.type = tipo; o.frequency.value = f; g.gain.value = vol; o.connect(g); g.connect(actx.destination);
+      o.start(t); o.stop(t + dur);
+    }catch(e){}
+  }
+  function pitarOk(){ tono(1320, .08, "sine", .12); }
+  function pitarPos(){ tono(1320, .08, "sine", .12); tono(1760, .1, "sine", .12, .1); }
+  function pitarMal(){ tono(220, .3, "square", .2); tono(180, .35, "square", .2, .4); try{ navigator.vibrate && navigator.vibrate([300, 120, 300]); }catch(e){} }
+
+  /* ===== nombres: producto + tono, igual que el Checklist ===== */
+  function norm(s){ return String(s || "").normalize("NFD").replace(/[^ -~]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, " ").trim(); }
+  function normTono(t){ var n = norm(t); return /^(ESTANDAR|UNICO|N ?A|SIN TONO)?$/.test(n) ? "" : n; }
+  function tonoCodigo(t){
+    var n = normTono(t).replace(/^TONO /, "");
+    if(!n) return "";
+    var m = n.match(/^(\d+)(?: (\d+)(?= |$))?/);
+    if(m) return String(+m[1]) + (m[2] ? "-" + (+m[2]) : "");
+    m = n.match(/ (\d+)$/);
+    return m ? String(+m[1]) : n;
+  }
+  function clave(prod, tono){ return norm(prod) + "|" + tonoCodigo(tono); }
+  function contiene(largo, corto){ var L = " " + norm(largo) + " "; return norm(corto).split(" ").every(function(p){ return L.indexOf(" " + p + " ") >= 0; }); }
+  function claveCodigo(c){ var s = String(c || "").trim().toUpperCase().replace(/\s+/g, ""); return /^\d+$/.test(s) ? s.replace(/^0+/, "") : s; }
+  function nombreG(g){ return g.producto + (normTono(g.tono) ? " · " + g.tono : ""); }
+
+  /* Código de posición: "E3-05". Tolera lo que hacen las pistolas con teclado en español (el guion puede
+     llegar como ' o ?) y minúsculas. Sin separador: E305 = E3-05, E1012 = E10-12. */
+  function posCodigo(s){
+    var t = String(s || "").trim().toUpperCase();
+    var m = t.match(/^E\s*(\d{1,2})[^0-9A-Z]{1,2}(\d{1,2})$/);
+    if(!m){
+      var d = t.match(/^E(\d{3,4})$/);
+      if(!d) return null;
+      m = [null, d[1].slice(0, d[1].length - 2), d[1].slice(-2)];
+    }
+    var p = +m[2];
+    return "E" + (+m[1]) + "-" + (p < 10 ? "0" : "") + p;
+  }
+  function estDe(pos){ return pos.split("-")[0]; }
+
+  /* Cantidad en la presentación del pedido: "1 DOC + 3 UND" (y unidades sueltas aparte) */
+  function cantidadTxt(it){ return it.lineas.map(function(l){ return nf(l.qty) + " " + l.pres; }).join(" + "); }
+
+  /* La cantidad en cuadros blancos grandes: el número enorme y debajo la palabra completa
+     ("DOCENA", "UNIDADES"). Si el pedido trae 1 DOC + 3 UND salen dos cuadros con un + en medio. */
+  function nombrePres(pres, n){
+    var p = norm(pres);
+    if(/^DOC/.test(p)) return n === 1 ? "Docena" : "Docenas";
+    if(/^DISPLAY/.test(p)) return n === 1 ? "Display" : "Displays";
+    if(/^(UND|UNIDAD|UNID|U)$/.test(p) || /^UNIDAD/.test(p)) return n === 1 ? "Unidad" : "Unidades";
+    return pres;
+  }
+  function cajasCantidad(it){
+    var cajas = it.lineas.map(function(l){
+      return '<div class="cant"><b>' + nf(l.qty) + "</b><span>" + esc(nombrePres(l.pres, l.qty)) + "</span>" +
+        (l.factor > 1 ? "<small>= " + nf(l.qty * l.factor) + " unidades</small>" : "") + "</div>";
+    });
+    return '<div class="cajas">' + cajas.join('<div class="suma">+</div>') + "</div>" +
+      (it.lineas.length > 1 ? '<div class="total-und">En total ' + nf(it.unidades) + " unidades</div>" : "");
+  }
+
+  /* ===== cuadros ===== */
+  function abrirCuadro(html){ var m = $("modal"); m.innerHTML = html; m.hidden = false; }
+  function cerrarCuadro(){ pararCamara(); $("modal").hidden = true; $("modal").innerHTML = ""; st.errAbierto = 0; st.formAbierto = false; enfocar(); }
+  function enfocar(){ if(st.vista === "ola" && !st.formAbierto) $("scan").focus({preventScroll:true}); }
+  $("modal").addEventListener("click", function(ev){ if(ev.target.id === "modal" && st.errAbierto) cerrarCuadro(); });
+
+  /* ===== pantallas ===== */
+  function vista(v){
+    st.vista = v;
+    $("vInicio").hidden = v !== "inicio";
+    $("vOla").hidden = v !== "ola"; $("pie").hidden = v !== "ola";
+    window.scrollTo(0, 0);
+  }
+  function persona(){ return ($("nombreSel").hidden ? $("nombreIn").value : $("nombreSel").value).replace(/\s+/g, " ").trim(); }
+  function aviso(tipo, texto){ $("aviso").innerHTML = texto ? '<div class="aviso ' + tipo + '">' + esc(texto) + "</div>" : ""; }
+
+  function cargarBase(){
+    api("codigos").then(function(r){
+      st.codigos = {};
+      r.codigos.forEach(function(c){ st.codigos[claveCodigo(c.codigo)] = c; });
+      st.codigosLista = r.codigos; st.refs = null;
+      $("estadoCod").textContent = r.codigos.length + " códigos de barras de productos cargados.";
+    }).catch(function(e){ $("estadoCod").textContent = "No se cargaron los códigos: " + (e.error || ""); });
+    api("equipo").then(function(r){
+      if(!r.nombres.length) return;
+      var s = $("nombreSel"), previo = lsGet("rep:persona");
+      s.innerHTML = '<option value="">Elige tu nombre</option>' + r.nombres.map(function(n){ return "<option" + (n === previo ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("");
+      s.hidden = false; $("nombreIn").hidden = true;
+    }).catch(function(){});
+  }
+
+  $("fOla").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    if(!persona()){ aviso("warn", "Escribe o elige tu nombre."); return; }
+    lsSet("rep:persona", persona());
+    abrirOla($("olaIn").value, false);
+  });
+
+  function abrirOla(nombre, recargar){
+    nombre = String(nombre || "").trim();
+    if(!nombre){ aviso("warn", "Escribe el número de la ola."); $("olaIn").focus(); return; }
+    var turno = ++st.turno;
+    $("btnAbrir").disabled = true; $("btnAbrir").textContent = "Buscando la ola en Bukapp…"; aviso("", "");
+    if(recargar) mensaje("warn", "Recargando la ola desde Bukapp…");
+    api("ola", {ola:nombre, recargar:!!recargar}).then(function(r){
+      if(turno !== st.turno) return;
+      cargarOla(r);
+      if(recargar) mensaje("ok", "Ola recargada de Bukapp.");
+    }).catch(function(e){
+      if(turno !== st.turno) return;
+      if(st.vista === "ola") mensaje("bad", e.error || "No se pudo recargar.");
+      else { aviso(e.noExiste ? "warn" : "bad", e.error || "No se pudo abrir la ola."); lsDel("rep:ola"); $("olaIn").select(); }
+    }).then(function(){ if(turno === st.turno){ $("btnAbrir").disabled = false; $("btnAbrir").textContent = "Abrir ola"; } });
+  }
+
+  /* Arma el trabajo: un "ítem" = un producto (productId+variante) en una posición. Si el pedido trae el mismo
+     producto en dos líneas (1 DOC y 3 UND), es UN solo ítem con las dos cantidades. */
+  function cargarOla(r){
+    var previo = st.ola && st.ola.nombre === r.ola.nombre;
+    st.ola = r.ola; st.pedidos = r.pedidos; st.porPos = {};
+    var grupos = {};
+    r.pedidos.forEach(function(p){
+      var pos = posCodigo(p.etiqueta) || p.etiqueta;
+      st.porPos[pos] = {pos:pos, pedido:p, items:[]};
+      var porPid = {};
+      p.lineas.forEach(function(l){
+        if(!(l.qty > 0)) return;
+        var g = grupos[l.pid];
+        if(!g) g = grupos[l.pid] = {pid:l.pid, producto:l.producto, tono:l.tono, clave:clave(l.producto, l.tono), items:[]};
+        var it = porPid[l.pid];
+        if(!it){
+          it = porPid[l.pid] = {clave:p.id + "|" + l.pid, g:g, pos:pos, pedido:p.numero, lineas:[], unidades:0, faltante:0};
+          g.items.push(it); st.porPos[pos].items.push(it);
+        }
+        it.lineas.push({qty:l.qty, pres:l.pres, factor:l.factor});
+        it.unidades += l.qty * l.factor; it.faltante += (l.faltante || 0) * l.factor;
+      });
+    });
+    st.grupos = Object.keys(grupos).map(function(k){ return grupos[k]; });
+    st.grupos.forEach(function(g){ g.items.sort(function(a, b){ return a.pos.localeCompare(b.pos); }); });
+    st.grupos.sort(function(a, b){ return a.producto.localeCompare(b.producto, "es", {sensitivity:"base", numeric:true}) || String(a.tono).localeCompare(String(b.tono), "es", {numeric:true}); });
+    st.hechas = {};
+    (r.marcas || []).forEach(function(m){ st.hechas[m.clave] = m.persona || "?"; });
+    // Lo que esta tablet marcó y todavía no subió también cuenta como hecho
+    st.cola = (lsGet("rep:cola:" + r.ola.nombre) || []);
+    st.cola.forEach(function(m){ st.hechas[m.clave] = st.hechas[m.clave] || persona(); });
+    st.errCola = (lsGet("rep:err:" + r.ola.nombre) || []);
+    var t = lsGet("rep:t:" + r.ola.nombre);
+    st.yo = t || {inicio:Date.now(), colocados:0, unidades:0, errores:0};
+    lsSet("rep:t:" + r.ola.nombre, st.yo);
+    lsSet("rep:ola", r.ola.nombre);
+    if(!previo){ st.activo = null; st.ultimaPos = null; }
+    else if(st.activo){ st.activo = st.grupos.filter(function(g){ return g.clave === st.activo.clave; })[0] || null; }
+    vista("ola");
+    $("tOla").textContent = "Ola " + r.ola.nombre;
+    $("tEst").textContent = (r.ola.estanteria.nombre || r.ola.estanteria.codigo) + " · " + r.pedidos.length + " posiciones";
+    $("tQuien").textContent = persona();
+    pintarTodo(); enfocar();
+    if(!previo) mensaje("", "");
+    subir();
+  }
+
+  /* ===== pintar ===== */
+  function hecho(it){ return !!st.hechas[it.clave]; }
+  function totales(){
+    var n = 0, h = 0;
+    st.grupos.forEach(function(g){ g.items.forEach(function(it){ n++; if(hecho(it)) h++; }); });
+    return {n:n, h:h};
+  }
+  function pintarTodo(){ pintarCab(); pintarGrande(); pintarGrid(); pintarPend(); }
+  function pintarCab(){ var t = totales(); $("tProg").textContent = t.h + " / " + t.n; }
+
+  function pintarGrande(){
+    var el = $("grande"), g = st.activo;
+    if(!g){
+      var t = totales();
+      el.className = "panel idle";
+      el.innerHTML = t.n && t.h === t.n
+        ? '<div class="ico">✓</div><b>Ola repartida completa</b><span>Todos los productos están en su posición. Toca «Terminar».</span>'
+        : '<div class="ico">|||</div><b>Escanea un producto</b><span>Te digo a qué posiciones va.</span>';
+      return;
+    }
+    var pend = g.items.filter(function(it){ return !hecho(it); });
+    var ult = st.ultimaPos && g.items.filter(function(it){ return it.pos === st.ultimaPos; })[0];
+    var html = '<span class="lbl">Producto</span><div><div class="nombre">' + esc(g.producto) + "</div>" +
+      (normTono(g.tono) ? '<div class="tono">Tono: ' + esc(g.tono) + "</div>" : "") + "</div>";
+    if(ult && hecho(ult)){
+      html += '<div class="poner"><div><span class="lbl">Pon aquí</span><div class="donde">' + esc(ult.pos) + "</div></div>" +
+        cajasCantidad(ult) + "</div>" +
+        (ult.faltante ? '<div class="aviso warn nota">Surtido reportó faltante en este pedido: ' + nf(ult.faltante) + " und que NO van.</div>" : "");
+    }
+    html += '<span class="lbl">' + (pend.length ? "Va en " + (pend.length === 1 ? "esta posición" : "estas " + pend.length + " posiciones") + " · escanea la etiqueta al llegar" : "Repartido completo") + "</span>";
+    html += '<div class="posiciones">' + g.items.map(function(it){
+      var cls = hecho(it) ? (it.pos === st.ultimaPos ? " ultima" : " hecha") : "";
+      return '<div class="pos' + cls + '">' + esc(it.pos) + "<small>#" + esc(it.pedido) + "</small></div>";
+    }).join("") + "</div>";
+    if(!pend.length) html += '<div class="fin-prod"><span>✓ Este producto ya quedó en todas sus posiciones.</span>' +
+      '<button class="btn verde" type="button" id="btnFinProd">Finalizar producto</button></div>';
+    el.className = "panel " + (ult && hecho(ult) ? "okp" : "prod");
+    el.innerHTML = html;
+    if($("btnFinProd")) $("btnFinProd").onclick = finalizarProducto;
+  }
+
+  function pintarGrid(){
+    var claves = Object.keys(st.porPos).sort();
+    $("grid").innerHTML = claves.map(function(k){
+      var P = st.porPos[k], n = P.items.length, h = P.items.filter(hecho).length, pct = n ? h / n * 100 : 100;
+      var act = st.activo && st.activo.items.some(function(it){ return it.pos === k && !hecho(it); });
+      return '<button type="button" class="celda' + (n && h === n ? " lista" : "") + (act ? " activa" : "") + '" data-pos="' + esc(k) + '">' +
+        '<span class="e">' + esc(k) + '</span><span class="det">#' + esc(P.pedido.numero) + " · " + h + "/" + n + " productos</span>" +
+        '<span class="barra"><i style="width:' + pct + '%"></i></span></button>';
+    }).join("");
+  }
+  $("grid").addEventListener("click", function(ev){
+    var b = ev.target.closest(".celda"); if(b) verPosicion(b.getAttribute("data-pos"));
+  });
+
+  function pintarPend(){
+    var pend = st.grupos.filter(function(g){ return g.items.some(function(it){ return !hecho(it); }); });
+    $("nPend").textContent = pend.length;
+    $("lPend").innerHTML = pend.map(function(g){
+      return "<li><span>" + esc(nombreG(g)) + '</span><span class="ps">' + g.items.filter(function(it){ return !hecho(it); }).map(function(it){ return esc(it.pos); }).join(" · ") + "</span></li>";
+    }).join("") || '<li><span>Nada pendiente.</span></li>';
+  }
+
+  function mensaje(tipo, texto){ var m = $("msg"); m.className = "msg " + tipo; m.textContent = texto; }
+
+  /* ===== escaneo ===== */
+  $("scan").addEventListener("keydown", function(ev){
+    if(ev.key !== "Enter") return;
+    ev.preventDefault();
+    var v = $("scan").value; $("scan").value = "";
+    procesar(v);
+  });
+  document.addEventListener("click", function(){ setTimeout(enfocar, 0); });
+
+  // metodo: "pistola" (por defecto), "camara" o "manual". Queda en REPARTO_MARCAS (columna METODO).
+  function procesar(codigo, metodo){
+    codigo = String(codigo || "").trim();
+    if(!codigo || st.vista !== "ola" || st.formAbierto) return;
+    st.ultimoMetodo = metodo || "pistola";
+    // Un cuadro rojo abierto se cierra con el siguiente disparo, pero no antes de 1,2 s (que alcance a leerlo)
+    if(st.errAbierto){ if(Date.now() - st.errAbierto < 1200) return; cerrarCuadro(); }
+    var pos = posCodigo(codigo);
+    if(pos){ leerPosicion(pos, codigo); return; }
+    if(st.pedidos.some(function(p){ return String(p.numero) === codigo.replace(/\D/g, ""); })){ mensaje("warn", "Ese es un número de pedido. Escanea el producto o la etiqueta de la posición."); return; }
+    var c = st.codigos[claveCodigo(codigo)];
+    if(!c){ aprender(codigo); return; }
+    leerProducto(c, codigo);
+  }
+
+  function gruposDe(c){
+    var k = clave(c.producto, c.tono), tc = tonoCodigo(c.tono);
+    var gs = st.grupos.filter(function(g){ return g.clave === k; }), aprox = false;
+    if(!gs.length){
+      // El nombre de la lista no es idéntico al de Bukapp: vale si uno contiene al otro y el tono coincide.
+      gs = st.grupos.filter(function(g){ return tonoCodigo(g.tono) === tc && (contiene(g.producto, c.producto) || contiene(c.producto, g.producto)); });
+      var prods = {}; gs.forEach(function(g){ prods[norm(g.producto)] = 1; });
+      if(Object.keys(prods).length !== 1) gs = []; else aprox = true;
+    }
+    return {gs:gs, aprox:aprox};
+  }
+  // Si dos productos de Bukapp tienen el mismo nombre y tono, se tratan como uno solo.
+  function unir(gs){
+    if(gs.length === 1) return gs[0];
+    var u = {pid:gs.map(function(g){ return g.pid; }).join("+"), producto:gs[0].producto, tono:gs[0].tono, clave:gs[0].clave, items:[]};
+    gs.forEach(function(g){ u.items = u.items.concat(g.items); });
+    u.items.sort(function(a, b){ return a.pos.localeCompare(b.pos); });
+    return u;
+  }
+
+  function leerProducto(c, codigo){
+    var nombre = c.producto + (normTono(c.tono) ? " · " + c.tono : "");
+    var r = gruposDe(c);
+    if(!r.gs.length){
+      var mismo = st.grupos.filter(function(g){ return norm(g.producto) === norm(c.producto) || contiene(g.producto, c.producto); });
+      if(mismo.length) alarma("tono", "TONO EQUIVOCADO", "Leíste " + nombre + ". Esta ola pide: " + mismo.map(function(g){ return g.tono || "sin tono"; }).join(", ") + ".", {producto:nombre, leido:codigo});
+      else alarma("no_va", "NO VA EN ESTA OLA", nombre + " no está en ningún pedido de la ola " + st.ola.nombre + ". Apártalo y avisa a surtido.", {producto:nombre, leido:codigo});
+      return;
+    }
+    var g = unir(r.gs), pend = g.items.filter(function(it){ return !hecho(it); });
+    // Producto que ya quedó en todas sus posiciones: NO se vuelve a abrir (evita el "¿yo ya hice esto?").
+    if(!pend.length){ yaFinalizado(g); return; }
+    // Si el anterior quedó completo y no le dieron "Finalizar", se finaliza solo al pasar al siguiente.
+    if(st.activo && st.activo.items.every(hecho)) mensaje("ok", "✓ " + nombreG(st.activo) + " finalizado.");
+    st.activo = g; st.ultimaPos = null; st.metodoProd = st.ultimoMetodo || "pistola";
+    pitarOk();
+    pintarGrande(); pintarGrid();
+    mensaje("ok", nombreG(g) + (r.aprox ? " (nombre aproximado en la lista de códigos)" : "") + " → " + pend.map(function(it){ return it.pos; }).join(", "));
+  }
+
+  // Botón "Finalizar producto": cierra el producto completo y deja la pantalla lista para el siguiente.
+  function finalizarProducto(){
+    if(!st.activo) return;
+    var nom = nombreG(st.activo);
+    st.activo = null; st.ultimaPos = null;
+    pitarOk(); pintarTodo(); enfocar();
+    mensaje("ok", "✓ " + nom + " finalizado. Escanea el siguiente producto.");
+  }
+
+  // Escanearon un producto que ya está en todas sus posiciones: aviso amarillo con dónde quedó y quién lo puso.
+  function yaFinalizado(g){
+    tono(660, .15, "triangle", .15); tono(520, .2, "triangle", .15, .18);
+    mensaje("warn", nombreG(g) + " ya está finalizado.");
+    abrirCuadro('<div class="caja aviso-caja"><p class="grito warn">YA ESTÁ FINALIZADO</p>' +
+      '<p style="font-size:18px;font-weight:700">' + esc(nombreG(g)) + "</p>" +
+      '<p>Ya quedó en todas sus posiciones:</p><ul style="margin:0;padding-left:20px">' + g.items.map(function(it){
+        return "<li><b>" + esc(it.pos) + "</b> · " + esc(cantidadTxt(it)) + ' <span class="det">· ' + esc(st.hechas[it.clave] || "") + "</span></li>";
+      }).join("") + "</ul>" +
+      '<p class="det">Si te sobran unidades de este producto, apártalas y avisa a tu líder.</p>' +
+      '<div class="botones"><button class="btn pri" type="button" id="yfOk">Entendido</button></div></div>');
+    st.errAbierto = Date.now() - 600;
+    $("yfOk").onclick = cerrarCuadro;
+  }
+
+  function leerPosicion(pos, leido){
+    var est = st.ola.estanteria.codigo;
+    if(estDe(pos) !== String(est).toUpperCase()){
+      alarma("estanteria", "ESTANTERÍA EQUIVOCADA", "Leíste " + pos + ", pero la ola " + st.ola.nombre + " está en la " + est + ".", {producto:st.activo ? nombreG(st.activo) : "", leido:leido, correctas:st.activo ? pendientesTxt(st.activo) : ""});
+      return;
+    }
+    var P = st.porPos[pos];
+    if(!P){ alarma("posicion_vacia", "POSICIÓN SIN PEDIDO", "La posición " + pos + " no tiene pedido en esta ola.", {producto:st.activo ? nombreG(st.activo) : "", leido:leido, correctas:st.activo ? pendientesTxt(st.activo) : ""}); return; }
+    if(!st.activo){ verPosicion(pos); return; }
+    var g = st.activo, it = g.items.filter(function(x){ return x.pos === pos; })[0];
+    if(!it){
+      alarma("posicion", "NO VA EN " + pos, nombreG(g) + " va en: " + (pendientesTxt(g) || "ninguna posición pendiente") + ".", {producto:nombreG(g), leido:leido, correctas:pendientesTxt(g)});
+      return;
+    }
+    if(hecho(it)){
+      st.ultimaPos = pos; pintarGrande();
+      mensaje("warn", "Ya estaba colocado en " + pos + " (lo marcó " + st.hechas[it.clave] + "). Cantidad: " + cantidadTxt(it) + ".");
+      pitarOk(); return;
+    }
+    // ✓ posición correcta: se marca y se sube
+    st.hechas[it.clave] = persona(); st.ultimaPos = pos;
+    st.yo.colocados++; st.yo.unidades += it.unidades; lsSet("rep:t:" + st.ola.nombre, st.yo);
+    st.cola.push({clave:it.clave, posicion:pos, pedido:it.pedido, producto:g.producto, tono:g.tono, cantidad:cantidadTxt(it), unidades:it.unidades, fecha:ahora(),
+      metodo:"producto " + (st.metodoProd || "pistola") + " · posición " + (st.ultimoMetodo || "pistola")});
+    lsSet("rep:cola:" + st.ola.nombre, st.cola);
+    pitarPos();
+    pintarTodo();
+    var quedan = g.items.filter(function(x){ return !hecho(x); }).length;
+    mensaje("ok", "✓ " + pos + ": pon " + cantidadTxt(it) + (quedan ? " · falta" + (quedan > 1 ? "n " + quedan + " posiciones" : " 1 posición") + " de este producto" : " · producto completo"));
+    subir();
+  }
+  function pendientesTxt(g){ return g.items.filter(function(it){ return !hecho(it); }).map(function(it){ return it.pos; }).join(", "); }
+
+  // Tocar una celda (o escanear una posición sin producto activo): qué le falta a esa posición.
+  function verPosicion(pos){
+    var P = st.porPos[pos]; if(!P) return;
+    var falta = P.items.filter(function(it){ return !hecho(it); }), listos = P.items.filter(hecho);
+    abrirCuadro('<div class="caja"><h3>' + esc(pos) + " · pedido #" + esc(P.pedido.numero) + '</h3><p class="det">' + esc(P.pedido.cliente) + "</p>" +
+      (falta.length ? '<p class="etq">Le falta (' + falta.length + ")</p><ul style='margin:0;padding-left:18px'>" + falta.map(function(it){ return "<li><b>" + esc(nombreG(it.g)) + "</b> · " + esc(cantidadTxt(it)) + "</li>"; }).join("") + "</ul>"
+                    : '<div class="aviso ok">✓ Esta posición ya tiene todos sus productos.</div>') +
+      (listos.length ? '<details><summary class="det">Ya colocados (' + listos.length + ")</summary><ul class='det' style='margin:6px 0 0;padding-left:18px'>" + listos.map(function(it){ return "<li>" + esc(nombreG(it.g)) + " · " + esc(cantidadTxt(it)) + " · " + esc(st.hechas[it.clave]) + "</li>"; }).join("") + "</ul></details>" : "") +
+      '<div class="botones"><button class="btn pri" type="button" id="vpOk">Cerrar</button></div></div>');
+    st.errAbierto = Date.now() - 1200;   // se cierra con el siguiente disparo sin esperar
+    $("vpOk").onclick = cerrarCuadro;
+  }
+
+  /* Alarma: cuadro rojo, sonido fuerte y vibración. Queda anotada en REPARTO_ERRORES. */
+  function alarma(tipo, titulo, texto, datos){
+    pitarMal();
+    st.yo.errores++; lsSet("rep:t:" + st.ola.nombre, st.yo);
+    st.errCola.push({tipo:tipo, producto:datos.producto || "", leido:datos.leido || "", correctas:datos.correctas || "", texto:titulo + ": " + texto, fecha:ahora()});
+    lsSet("rep:err:" + st.ola.nombre, st.errCola);
+    mensaje("bad", titulo + ": " + texto);
+    abrirCuadro('<div class="caja error sacude"><p class="grito">' + esc(titulo) + '</p><p style="font-size:18px">' + esc(texto) + "</p>" +
+      '<p class="det">Toca «Entendido» o escanea lo siguiente.</p><div class="botones"><button class="btn pri" type="button" id="alOk">Entendido</button></div></div>');
+    st.errAbierto = Date.now();
+    $("alOk").onclick = cerrarCuadro;
+    subir();
+  }
+
+  /* Código de producto que no está en CODIGOS: se pregunta cuál es (de los productos de ESTA ola) y se guarda. */
+  function aprender(codigo){
+    pitarMal();
+    st.formAbierto = true;
+    var ops = st.grupos.slice().sort(function(a, b){ return (a.items.every(hecho) ? 1 : 0) - (b.items.every(hecho) ? 1 : 0); });
+    abrirCuadro('<form class="caja" id="fAp"><h3>Código nuevo</h3>' +
+      '<p class="det">La pistola leyó <b class="mono">' + esc(codigo) + "</b> y no está en la lista. ¿Qué producto tienes en la mano?</p>" +
+      '<input type="text" id="apBus" placeholder="Buscar en la ola" style="font:500 16px var(--sans)">' +
+      '<div id="apOps" style="display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow:auto">' + ops.map(function(g, i){
+        return '<label class="op" data-n="' + esc(norm(nombreG(g))) + '"><input type="radio" name="g" value="' + i + '"><span><b>' + esc(g.producto) + '</b> <span class="det">' + esc(g.tono) + "</span></span></label>";
+      }).join("") + "</div>" +
+      '<div class="fila" id="apPres"><label class="op"><input type="radio" name="pres" value="UND" checked><span>Es la unidad suelta</span></label><label class="op"><input type="radio" name="pres" value="DOC"><span>Es la caja (DOC / display)</span></label></div>' +
+      '<div class="botones"><button class="btn" type="button" id="apNo">No está en la ola</button><button class="btn pri" type="submit" id="apOk">Guardar</button></div></form>');
+    $("apBus").addEventListener("input", function(){
+      var q = norm($("apBus").value);
+      document.querySelectorAll("#apOps .op").forEach(function(l){ l.hidden = q && l.getAttribute("data-n").indexOf(q) < 0; });
+    });
+    $("apNo").onclick = function(){ cerrarCuadro(); alarma("desconocido", "PRODUCTO SIN CÓDIGO", "El código " + codigo + " no está registrado y no es de esta ola. Apártalo y avisa a tu líder.", {leido:codigo}); };
+    $("fAp").onsubmit = function(ev){
+      ev.preventDefault();
+      var sel = document.querySelector('#apOps input[name="g"]:checked');
+      if(!sel){ $("apBus").focus(); return; }
+      var g = ops[+sel.value], pres = document.querySelector('input[name="pres"]:checked').value;
+      var c = {codigo:codigo, producto:g.producto, tono:g.tono, pres:pres, persona:persona()};
+      $("apOk").disabled = true; $("apOk").textContent = "Guardando…";
+      api("aprender", c).then(function(){
+        st.codigos[claveCodigo(codigo)] = c; cerrarCuadro(); leerProducto(c, codigo);
+      }).catch(function(e){ cerrarCuadro(); mensaje("bad", "No se guardó el código: " + (e.error || "error")); });
+    };
+  }
+
+  /* ===== CÁMARA =====
+     1) En vivo: getUserMedia + lector nativo del navegador (BarcodeDetector, el de Chrome en Android).
+        Si el navegador no lo trae, se carga ZXing (librería libre) y se leen los cuadros del video.
+     2) Si la página no tiene permiso de cámara en vivo (pasa dentro de algunos marcos de Apps Script),
+        queda "Tomar foto": abre la cámara normal del teléfono/tablet y se lee el código de la foto. */
+  var cam = {stream:null, timer:null, det:null, zx:null};
+  var ZXING_URL = "https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js";
+  function cargarZxing(){
+    if(cam.zx) return Promise.resolve(cam.zx);
+    return new Promise(function(ok, fail){
+      var listo = function(){
+        var Z = window.ZXing; if(!Z){ fail(new Error("sin lector")); return; }
+        var lector = new Z.MultiFormatReader(), h = new Map();
+        h.set(Z.DecodeHintType.TRY_HARDER, true); lector.setHints(h);
+        cam.zx = function(canvas){
+          try{ return lector.decode(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(canvas)))).getText(); }
+          catch(e){ return null; }
+        };
+        ok(cam.zx);
+      };
+      if(window.ZXing){ listo(); return; }
+      var s = document.createElement("script"); s.src = ZXING_URL; s.onload = listo;
+      s.onerror = function(){ fail(new Error("No se pudo cargar el lector de códigos (¿sin internet?).")); };
+      document.head.appendChild(s);
+    });
+  }
+  function detectorNativo(){
+    if(cam.det !== null) return Promise.resolve(cam.det);
+    if(!("BarcodeDetector" in window)){ cam.det = false; return Promise.resolve(false); }
+    return BarcodeDetector.getSupportedFormats().then(function(f){
+      var q = ["ean_13", "ean_8", "code_128", "upc_a", "upc_e", "itf", "code_39"].filter(function(x){ return f.indexOf(x) >= 0; });
+      cam.det = q.length ? new BarcodeDetector({formats:q}) : false; return cam.det;
+    }).catch(function(){ cam.det = false; return false; });
+  }
+  // Lee un código de un canvas: primero el lector nativo, si no, ZXing.
+  function leerCanvas(cv){
+    return detectorNativo().then(function(det){
+      if(det) return det.detect(cv).then(function(rs){ return rs && rs[0] ? rs[0].rawValue : null; });
+      return cargarZxing().then(function(zx){ return zx(cv); });
+    });
+  }
+  function pararCamara(){
+    clearTimeout(cam.timer); cam.timer = null;
+    if(cam.stream){ cam.stream.getTracks().forEach(function(t){ t.stop(); }); cam.stream = null; }
+  }
+  function abrirCamara(){
+    if(st.vista !== "ola") return;
+    if(st.errAbierto) cerrarCuadro();
+    st.formAbierto = true;
+    abrirCuadro('<div class="caja cam"><h3>Leer con la cámara</h3>' +
+      '<div class="visor"><video id="camVideo" playsinline muted></video><div class="mira"></div><div class="estado-cam" id="camEstado">Abriendo la cámara…</div></div>' +
+      '<p class="det" id="camAyuda">Pon el código de barras dentro del recuadro y quédate quieto un segundo.</p>' +
+      '<div class="botones"><button class="btn" type="button" id="camCerrar">Cerrar</button>' +
+      '<label class="btn pri foto">Tomar foto<input type="file" accept="image/*" capture="environment" id="camFoto"></label></div></div>');
+    $("camCerrar").onclick = cerrarCuadro;
+    $("camFoto").onchange = function(){ var f = this.files && this.files[0]; if(f) leerFoto(f); };
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ sinVivo("Esta pantalla no deja usar la cámara en vivo."); return; }
+    navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}, width:{ideal:1280}, height:{ideal:720}}, audio:false}).then(function(s){
+      if(!$("camVideo")){ s.getTracks().forEach(function(t){ t.stop(); }); return; }
+      cam.stream = s; var v = $("camVideo"); v.srcObject = s;
+      return v.play().then(function(){ $("camEstado").textContent = "Buscando código…"; buscarEnVideo(v); });
+    }).catch(function(e){
+      sinVivo(e && e.name === "NotAllowedError" ? "No hay permiso para la cámara en vivo." : "No se pudo abrir la cámara en vivo.");
+    });
+  }
+  function sinVivo(t){
+    if($("camEstado")) $("camEstado").textContent = t;
+    if($("camAyuda")) $("camAyuda").innerHTML = esc(t) + " Toca <b>Tomar foto</b>: le tomas una foto al código y yo lo leo de la foto.";
+  }
+  // Toma cuadros del video (el centro, donde está el recuadro) cada ~0,2 s hasta encontrar un código.
+  function buscarEnVideo(v){
+    var cv = document.createElement("canvas"), ctx = cv.getContext("2d", {willReadFrequently:true});
+    var ciclo = function(){
+      if(!cam.stream) return;
+      var w = v.videoWidth, h = v.videoHeight;
+      if(!w){ cam.timer = setTimeout(ciclo, 200); return; }
+      // franja central (lo que se ve dentro de la mira), a buena resolución
+      var sx = Math.round(w * .08), sy = Math.round(h * .25), sw = w - 2 * sx, sh = h - 2 * sy;
+      cv.width = sw; cv.height = sh; ctx.drawImage(v, sx, sy, sw, sh, 0, 0, sw, sh);
+      leerCanvas(cv).then(function(val){
+        if(val && cam.stream){ leidoCamara(val); return; }
+        cam.timer = setTimeout(ciclo, 200);
+      }).catch(function(e){
+        if($("camEstado")) $("camEstado").textContent = e.message || "No pude leer.";
+        cam.timer = setTimeout(ciclo, 800);
+      });
+    };
+    ciclo();
+  }
+  function leerFoto(f){
+    if($("camEstado")) $("camEstado").textContent = "Leyendo la foto…";
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onload = function(){
+      // Se prueba la foto derecha y girada (por si la tomaron de lado)
+      var intentos = [0, 90];
+      var probar = function(i){
+        if(i >= intentos.length){
+          URL.revokeObjectURL(url);
+          if($("camEstado")) $("camEstado").textContent = "No encontré el código en la foto.";
+          if($("camAyuda")) $("camAyuda").innerHTML = "No encontré el código en la foto. Acércate más, que salga <b>derecho, enfocado y sin reflejo</b>, y toma otra.";
+          return;
+        }
+        var esc2 = Math.min(1, 1600 / Math.max(img.width, img.height)), w = Math.round(img.width * esc2), h = Math.round(img.height * esc2);
+        var cv = document.createElement("canvas"), ctx = cv.getContext("2d", {willReadFrequently:true}), giro = intentos[i];
+        cv.width = giro ? h : w; cv.height = giro ? w : h;
+        if(giro){ ctx.translate(cv.width / 2, cv.height / 2); ctx.rotate(giro * Math.PI / 180); ctx.drawImage(img, -w / 2, -h / 2, w, h); }
+        else ctx.drawImage(img, 0, 0, w, h);
+        leerCanvas(cv).then(function(val){ if(val){ URL.revokeObjectURL(url); leidoCamara(val); } else probar(i + 1); })
+          .catch(function(){ probar(i + 1); });
+      };
+      probar(0);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); if($("camEstado")) $("camEstado").textContent = "No pude abrir la foto."; };
+    img.src = url;
+  }
+  function leidoCamara(val){
+    pararCamara(); cerrarCuadro();
+    procesar(val, "camara");
+  }
+  $("btnCam").addEventListener("click", abrirCamara);
+
+  /* ===== MANUAL: lista de los productos de la ola por referencia y nombre =====
+     La referencia sale de la pestaña CODIGOS (columna REFERENCIA, sin el "EAN13"). Tocar un producto
+     equivale a escanearlo; la posición se sigue confirmando con su etiqueta. Queda anotado como "manual". */
+  function refDe(g){
+    if(!st.refs){
+      st.refs = {};
+      (st.codigosLista || []).forEach(function(c){
+        var r = String(c.ref || "").replace(/\s*EAN.*$/i, "").trim(), k = clave(c.producto, c.tono);
+        if(r && !st.refs[k]) st.refs[k] = r;
+      });
+    }
+    if(st.refs[g.clave]) return st.refs[g.clave];
+    // nombre parecido (la lista de códigos no siempre usa el nombre exacto de Bukapp)
+    var tc = tonoCodigo(g.tono), c = (st.codigosLista || []).filter(function(x){
+      return x.ref && tonoCodigo(x.tono) === tc && (contiene(g.producto, x.producto) || contiene(x.producto, g.producto));
+    })[0];
+    return c ? String(c.ref).replace(/\s*EAN.*$/i, "").trim() : "";
+  }
+  function abrirManual(){
+    if(st.vista !== "ola") return;
+    if(st.errAbierto) cerrarCuadro();
+    st.formAbierto = true;
+    var lista = st.grupos.slice().sort(function(a, b){
+      var ha = a.items.every(hecho) ? 1 : 0, hb = b.items.every(hecho) ? 1 : 0;
+      return ha - hb || a.producto.localeCompare(b.producto, "es", {sensitivity:"base", numeric:true}) || String(a.tono).localeCompare(String(b.tono), "es", {numeric:true});
+    });
+    abrirCuadro('<div class="caja"><h3>Elegir el producto a mano</h3>' +
+      '<p class="det">Úsalo solo cuando el código no lee. Después igual escaneas la etiqueta de la posición.</p>' +
+      '<input type="text" id="manBus" placeholder="Buscar por referencia o nombre" autocomplete="off" style="font:600 17px var(--sans)">' +
+      '<div class="lista-man" id="manLista">' + lista.map(function(g, i){
+        var pend = g.items.filter(function(it){ return !hecho(it); }).length, ref = refDe(g);
+        return '<button type="button" class="it-man' + (pend ? "" : " hecho") + '" data-i="' + i + '" data-n="' + esc(norm(ref + " " + g.producto + " " + g.tono)) + '">' +
+          '<span class="ref">' + esc(ref || "—") + '</span><span class="nom">' + esc(g.producto) + (normTono(g.tono) ? "<small>Tono: " + esc(g.tono) + "</small>" : "") + "</span>" +
+          '<span class="cuantas">' + (pend ? pend + (pend === 1 ? " posición" : " posiciones") : "✓ Finalizado") + "</span></button>";
+      }).join("") + "</div>" +
+      '<div class="botones"><button class="btn" type="button" id="manCerrar">Cerrar</button></div></div>');
+    $("manCerrar").onclick = cerrarCuadro;
+    $("manBus").addEventListener("input", function(){
+      var q = norm(this.value);
+      document.querySelectorAll("#manLista .it-man").forEach(function(b){ b.hidden = !!q && b.getAttribute("data-n").indexOf(q) < 0; });
+    });
+    $("manLista").addEventListener("click", function(ev){
+      var b = ev.target.closest(".it-man"); if(!b) return;
+      var g = lista[+b.getAttribute("data-i")];
+      cerrarCuadro();
+      st.ultimoMetodo = "manual";
+      if(g.items.every(hecho)){ yaFinalizado(g); return; }
+      leerProducto({producto:g.producto, tono:g.tono}, "");
+      mensaje("ok", "A mano: " + nombreG(g) + " → " + pendientesTxt(g) + ". Escanea la etiqueta al llegar.");
+    });
+  }
+  $("btnManual").addEventListener("click", abrirManual);
+
+  /* ===== sincronización: subir lo colocado / los errores y traer lo que marcaron las otras tablets ===== */
+  function subir(){
+    if(st.enviando || !st.ola) return;
+    var ola = st.ola.nombre, lote = st.cola.slice(0, 40), errs = st.errCola.slice(0, 40);
+    if(!lote.length && !errs.length) return;
+    st.enviando = true; pintarSync("Subiendo…");
+    var p1 = lote.length ? api("marcar", {ola:ola, persona:persona(), marcas:lote}) : Promise.resolve(null);
+    p1.then(function(r){
+      if(lote.length){
+        st.cola = st.cola.slice(lote.length); lsSet("rep:cola:" + ola, st.cola);
+        if(r && r.marcas) fusionar(r.marcas);
+      }
+      return errs.length ? api("error", {ola:ola, persona:persona(), errores:errs}) : null;
+    }).then(function(){
+      if(errs.length){ st.errCola = st.errCola.slice(errs.length); lsSet("rep:err:" + ola, st.errCola); }
+      st.enviando = false; pintarSync();
+      if(st.cola.length || st.errCola.length) subir();
+    }).catch(function(e){
+      st.enviando = false; pintarSync("Sin conexión: " + (st.cola.length + st.errCola.length) + " por subir (se reintenta solo)");
+    });
+  }
+  function fusionar(marcas){
+    var cambio = false;
+    marcas.forEach(function(m){ if(!st.hechas[m.clave]){ st.hechas[m.clave] = m.persona || "?"; cambio = true; } });
+    if(cambio) pintarTodo();
+  }
+  function pintarSync(t){
+    var pend = st.cola.length + st.errCola.length;
+    $("sync").textContent = t || (pend ? pend + " por subir" : "Al día · " + new Date().toLocaleTimeString("es-CO", {hour:"2-digit", minute:"2-digit", second:"2-digit"}));
+  }
+  setInterval(function(){
+    if(st.vista !== "ola" || !st.ola || document.hidden) return;
+    if(st.cola.length || st.errCola.length){ subir(); return; }
+    api("estado", {ola:st.ola.nombre}).then(function(r){ fusionar(r.marcas); pintarSync(); }).catch(function(){ pintarSync("Sin conexión"); });
+  }, 12000);
+
+  /* ===== botones ===== */
+  $("btnSalir").onclick = function(){
+    if(st.cola.length && !confirmar("Hay " + st.cola.length + " colocados sin subir. Se suben cuando vuelvas a abrir esta ola.")) return;
+    lsDel("rep:ola"); st.ola = null; st.activo = null; vista("inicio"); $("olaIn").value = ""; $("olaIn").focus();
+  };
+  // confirm() no pregunta dentro del iframe de Apps Script: se avisa con mensaje y se deja salir.
+  function confirmar(t){ mensaje("warn", t); return true; }
+  $("btnRecargar").onclick = function(){ abrirOla(st.ola.nombre, true); };
+  $("btnTerminar").onclick = function(){
+    var t = totales(), min = (Date.now() - st.yo.inicio) / 60000;
+    st.formAbierto = true;
+    abrirCuadro('<div class="caja"><h3>Terminar · Ola ' + esc(st.ola.nombre) + "</h3>" +
+      '<dl class="resumen"><dt>Colocados por ti</dt><dd>' + st.yo.colocados + "</dd><dt>Unidades</dt><dd>" + nf(st.yo.unidades) + "</dd><dt>Alarmas</dt><dd>" + st.yo.errores + "</dd>" +
+      "<dt>Minutos desde que abriste la ola</dt><dd>" + nf(min) + "</dd><dt>Pendientes en la ola (todos)</dt><dd>" + (t.n - t.h) + "</dd></dl>" +
+      (t.n - t.h ? '<div class="aviso warn">Todavía faltan ' + (t.n - t.h) + " por colocar. Si otra persona sigue repartiendo, puedes terminar tu turno igual.</div>" : '<div class="aviso ok">✓ La ola quedó completa.</div>') +
+      '<div id="tMsg"></div><div class="botones"><button class="btn" type="button" id="tNo">Seguir repartiendo</button><button class="btn verde" type="button" id="tSi">Guardar y salir</button></div></div>');
+    $("tNo").onclick = cerrarCuadro;
+    $("tSi").onclick = function(){
+      $("tSi").disabled = true; $("tSi").textContent = "Guardando…";
+      subir();
+      var ola = st.ola.nombre;
+      api("terminar", {ola:ola, persona:persona(), resumen:{estanteria:st.ola.estanteria.codigo, minutos:min, colocados:st.yo.colocados, unidades:st.yo.unidades, errores:st.yo.errores, pendientes:t.n - t.h}})
+        .then(function(){
+          lsDel("rep:t:" + ola); lsDel("rep:ola");
+          if(!st.cola.length) lsDel("rep:cola:" + ola);
+          cerrarCuadro(); st.ola = null; st.activo = null; vista("inicio"); $("olaIn").value = "";
+          aviso("ok", "Ola " + ola + " guardada. ¡Gracias!");
+        }).catch(function(e){ $("tSi").disabled = false; $("tSi").textContent = "Guardar y salir"; $("tMsg").innerHTML = '<div class="aviso bad">' + esc(e.error || "No se pudo guardar.") + "</div>"; });
+    };
+  };
+
+  /* ===== arranque ===== */
+  var previa = lsGet("rep:persona"); if(previa) $("nombreIn").value = previa;
+  cargarBase();
+  var abierta = lsGet("rep:ola");
+  if(abierta && previa){ $("olaIn").value = abierta; abrirOla(abierta, false); }
+  else $(previa ? "olaIn" : "nombreIn").focus();
+  window.addEventListener("online", subir);
+})();
+</script>
+</body>
+</html>
